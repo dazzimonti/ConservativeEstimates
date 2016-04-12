@@ -20,9 +20,9 @@ arma::mat mvrnormArma(int n, arma::vec mu,arma::mat sigma,int chol) {
   if(chol){
     return arma::repmat(mu, 1, n) + sigma*Y;
   }else{
-    return arma::repmat(mu, 1, n) + arma::chol(sigma)*Y;
+    return arma::repmat(mu, 1, n) + arma::chol(sigma,"lower")*Y;
   }
-  return arma::repmat(mu, 1, n) + arma::chol(sigma)*Y;
+  return arma::repmat(mu, 1, n) + arma::chol(sigma,"lower")*Y;
 }
 
 //' @title Sample from truncated multivariate normal distribution with C++
