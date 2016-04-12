@@ -1,0 +1,251 @@
+#' @title Computationally efficient conservative estimate
+#'
+#' @description Computes conservative estimates with two step GANMC procedure for a Gaussian vector. The probability is approximated with a biased low dimensional estimator and the bias is corrected with a MC estimator.
+#'
+#' @param alpha probability of conservative estimate.
+#' @param pred list containing mean vector (pred$mean) and covariance matrix (pred$cov).
+#' @param design the discretization design for the field [to be removed?]
+#' @param Thresh threshold, real number.
+#' @param pn coverage probability function, vector of the same length as pred$mean (if not specified it is computed).
+#' @param type type of excursion: ">" for excursion above Thresh or "<" for below.
+#' @param verb level of verbosity, integer from 1--7.
+#' @param lightReturn boolean for light return.
+#' @param algo choice of algorithm for computing probabilities ("GANMC", "GMC").
+#' @return A list containing the conservative estimate ($set), the Vorob'ev level ($lvs). If lightReturn=FALSE, the actual probability of the set (proba) and the variance of this estimate (vars).
+#' @export
+conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",verb=1,lightReturn=T,algo="GANMC"){
+  if(is.null(pn)){
+    sds<-sqrt(diag(pred$cov))
+    if(type==">"){
+      pn <- pnorm((pred$mean -Thresh)/sds)
+    }else{
+      pn <- pnorm((Thresh-pred$mean)/sds)
+    }
+  }
+  sortPn<-sort(pn,index.return=T,decreasing = T)
+
+  productPn<-rep(-1,1e4)
+  productPn[1]<-sortPn$x[1]
+  indMaxSort<-1
+  indxAlphaProd<-1
+  while(sortPn$x[indMaxSort]>alpha){
+    indMaxSort<-indMaxSort+1
+    productPn[indMaxSort]<-prod(sortPn$x[1:indMaxSort])
+    if(productPn[indMaxSort]>alpha)
+      indxAlphaProd<-indxAlphaProd+1
+  }
+
+  if(verb){
+    cat("################################### \n")
+    cat("Conservative Estimates (v0.1) \n")
+    if(verb>1)
+      cat("Alpha: ",alpha, ", type: ",type,", algorithm: ",algo,"\n")
+    cat("################################### \n\n")
+    cat("Creating big covariance matrix (size:",indMaxSort,")...")
+  }
+  indx<-sortPn$ix[1:indMaxSort]
+  Sigma<-matrix(0,nrow = indMaxSort,ncol = indMaxSort)
+  for(k1 in seq(indMaxSort))
+    for(k2 in seq(indMaxSort)){
+      Sigma[k1,k2]<-pred$cov[indx[k1],indx[k2]]
+    }
+  if(verb)
+    cat("Done.\n Memory currently used: ",sum(gc()[,2]), " MB\n Initializing other variables...")
+  E<-matrix(design[indx,],ncol=ncol(design))
+  mu<-pred$mean[indx]
+
+  leftIndx<-indxAlphaProd
+  rightIndx<-indMaxSort
+
+  meth=2
+  sizeMaxGenz<-500
+
+  if(verb)
+    cat("Done.\nComputing first step...\n")
+  # if indMaxSort is less than 100 there's no need to use MCgrf
+  if(indMaxSort<sizeMaxGenz){
+    if(type==">"){
+      a<-Thresh
+      b<-Inf
+    }else{
+      a<--Inf
+      b<-Thresh
+    }
+    if(verb>1)
+      cat(" Size of excursion (",indMaxSort,") less than",sizeMaxGenz,", use Genz \n")
+    ProbaRight<-pmvnorm(lower = a,upper = b,mean = mu[1:rightIndx],sigma = Sigma[1:rightIndx,1:rightIndx])
+    ProbaLeft<-pmvnorm(lower = a,upper = b,mean = mu[1:leftIndx],sigma = Sigma[1:leftIndx,1:leftIndx])
+    varRight<-attr(ProbaRight,"error")
+    varLeft<-attr(ProbaLeft,"error")
+  }
+  else{ # Otherwise we need to..
+    precMC<-2.5e3
+    timeGANMC<-10
+    qq<-min(15,leftIndx)
+    if(verb>1)
+      cat(" indMaxSort (",indMaxSort,") greater than",sizeMaxGenz,", use MC/ANMC \n")
+    if(type==">"){
+      if(verb>1){
+        cat("  Type: > \n")
+        cat("  Compute probaL... \n")
+        cat("#####################\n")
+      }
+      probaL<-ProbaMin(cBdg=timeGANMC,q = qq,E = E[1:leftIndx,],Thresh = Thresh,mu = mu[1:leftIndx],Sigma = Sigma[1:leftIndx,1:leftIndx],pn = NULL,lightReturn=T,method=meth,verb=(verb-1),Algo=algo)
+      resL<-1-probaL$probabilities$probability
+      if(verb>1){
+        cat("#####################\n")
+        cat("   Done.\n  Compute probaR... \n")
+        cat("#####################\n")
+      }
+      probaR<-ProbaMin(cBdg=timeGANMC,q = qq,E = E[1:rightIndx,],Thresh = Thresh,mu = mu[1:rightIndx],Sigma = Sigma[1:rightIndx,1:rightIndx],pn = NULL,lightReturn=T,method=meth,verb=(verb-1),Algo=algo)
+      resR<-1-probaR$probabilities$probability
+      if(verb>1){
+        cat("#####################\n")
+        cat("   Done.\n")
+      }
+    }else{
+      if(verb>1){
+        cat("  Type: < \n")
+        cat("  Compute probaL...\n")
+        cat("#####################\n")
+      }
+      pn1L<- sortPn$x[1:leftIndx]#pnorm((Thresh-mu[1:leftIndx])/sqrt(diag(Sigma[1:leftIndx,1:leftIndx])))
+      probaL<-ProbaMax(cBdg=timeGANMC,q = qq,E = E[1:leftIndx,],Thresh = Thresh,mu = mu[1:leftIndx],Sigma = Sigma[1:leftIndx,1:leftIndx],pn = pn1L,lightReturn=T,method=meth,verb=(verb-1),Algo=algo)
+      resL<-1-probaL$probabilities$probability
+      if(verb>1){
+        cat("#####################\n")
+        cat("Done.\n  Compute probaR... \n")
+        cat("#####################\n")
+      }
+      pn1R<-sortPn$x[1:rightIndx] #pnorm((Thresh-mu[1:rightIndx])/sqrt(diag(Sigma[1:rightIndx,1:rightIndx])))
+      probaR<-ProbaMax(cBdg=timeGANMC,q = qq,E = E[1:rightIndx,],Thresh = Thresh,mu = mu[1:rightIndx],Sigma = Sigma[1:rightIndx,1:rightIndx],pn = pn1R,lightReturn=T,method=meth,verb=(verb-1),Algo=algo)
+      resR<-1-probaR$probabilities$probability
+      if(verb>1){
+        cat("#####################\n")
+        cat("Done.\n")
+      }
+    }
+    ProbaLeft<-as.numeric(resL)
+    ProbaRight<-as.numeric(resR)
+    varLeft<- probaL$variance
+    varRight<- probaR$variance
+  }
+  if(verb)
+    cat("Done. (Memory currently used: ",sum(gc()[,2])," MB)\n")
+  if(verb){
+    cat("\nIteration 0 finished.")
+    if(verb>1){
+      if(indMaxSort<sizeMaxGenz){
+        cat("leftIndx:",leftIndx,",ProbaLeft: ",ProbaLeft,", rightInx: ",rightIndx,",ProbaRight: ",ProbaRight," (Genz)")
+      }else{
+        cat("leftIndx:",leftIndx,",ProbaLeft: ",ProbaLeft,", rightInx: ",rightIndx,",ProbaRight: ",ProbaRight)
+        if(verb>2)
+          cat(", computational Bgd: ",timeGANMC," q: ",qq)
+        cat(". (Algorithm=",algo,")")
+      }
+      cat(". Memory currently used: ",sum(gc()[,2])," MB\n")
+    }
+    cat("\n")
+  }
+
+  ffSave=F
+  j=0
+  while(ProbaRight<alpha & (rightIndx-leftIndx)>=2){
+    NextEval<-ceiling((rightIndx+leftIndx)/2)
+
+    # if indMaxSort is less than 100 there's no need to use MCgrf
+    if(rightIndx<sizeMaxGenz){
+      if(type==">"){
+        a<-Thresh
+        b<-Inf
+      }else{
+        a<--Inf
+        b<-Thresh
+      }
+      ProbaEval<-pmvnorm(lower = a,upper = b,mean = mu[1:NextEval],sigma = Sigma[1:NextEval,1:NextEval])
+      varEval<-attr(ProbaEval,"error")
+    }
+    else{ # Otherwise we need to..
+      precMC<-2.5e3
+      qq<-min(15,leftIndx-1)
+      if(!lightReturn)
+        ffSave=T
+      if((rightIndx-leftIndx)<=7){
+        precMC<-5e3
+        timeGANMC=25
+        qq<-min(20,leftIndx-1)
+        if((rightIndx-leftIndx)<=5){
+          precMC<-1e4
+          qq<-min(20,leftIndx-1)
+        }
+        if((rightIndx-leftIndx)<=3){
+          precMC<-3e4
+          timeGANMC=30
+          qq<-min(30,leftIndx-1)
+        }
+      }
+
+      if(type==">"){
+        probaEval<-ProbaMin(cBdg=timeGANMC,q=qq,E=E[1:NextEval],Thresh=Thresh,mu=mu[1:NextEval],Sigma = Sigma[1:NextEval,1:NextEval],pn=NULL,lightReturn=!((!lightReturn)*ffSave),method=meth,verb=(verb-1),Algo=algo)
+        #   resEval<-1-probaEval$probabilities$probability
+      }else{
+        pn1E<-sortPn$x[1:NextEval]#pnorm((Thresh-mu[1:NextEval])/sqrt(diag(Sigma[1:NextEval,1:NextEval])))
+        probaEval<-ProbaMax(cBdg=timeGANMC,q = qq,E = E[1:NextEval,],Thresh = Thresh,mu = mu[1:NextEval],Sigma = Sigma[1:NextEval,1:NextEval],pn = pn1E,lightReturn=!((!lightReturn)*ffSave),method=meth,verb=(verb-1),Algo=algo)
+        #    resEval<-1-probaEval$probabilities$probability
+      }
+      ProbaEval<-as.numeric(1-probaEval$probabilities$probability)
+      varEval<- probaEval$variance
+    }
+
+
+    if(ProbaEval>alpha){
+      leftIndx<-NextEval
+      ProbaLeft<-ProbaEval
+      varLeft<-varEval
+      #    finPpL<-probaEval
+      rightIndx<-rightIndx
+      ProbaRight<-ProbaRight
+    }
+    else{
+      leftIndx<-leftIndx
+      ProbaLeft<-ProbaLeft
+      rightIndx<-NextEval
+      ProbaRight<-ProbaEval
+      varRight<-varEval
+      #    finPpR<-probaEval
+    }
+
+    j=j+1
+    if(verb){
+      cat("\nIteration ",j," finished.\n")
+      if(verb>1){
+        if(rightIndx<sizeMaxGenz){
+          cat("leftIndx:",leftIndx,",ProbaLeft: ",ProbaLeft,", rightInx: ",rightIndx,",ProbaRight: ",ProbaRight," (Genz)")
+        }else{
+          cat("leftIndx:",leftIndx,",ProbaLeft: ",ProbaLeft,", rightInx: ",rightIndx,",ProbaRight: ",ProbaRight)
+          if(verb>2)
+            cat(", timeGANMC: ",timeGANMC," q: ",qq)
+          cat(" (Algo=",algo,")")
+        }
+        cat(". Memory currently used: ",sum(gc()[,2])," MB\n")
+      }
+      cat("\n")
+    }
+
+  }
+
+  if(!lightReturn){
+    resList<-list(set=(pn>sortPn$x[rightIndx]),lvs=sortPn$x[rightIndx],proba=ProbaLeft,vars=varLeft)#,lastMCit=finPpL)
+  }else{
+    resList<-list(set=(pn>sortPn$x[rightIndx]),lvs=sortPn$x[rightIndx])
+  }
+  if(verb){
+    cat("Conservative estimate computation finished.")
+  }
+  rm(Sigma)
+  if(verb){
+    cat("(Memory currently used: ",sum(gc()[,2])," MB)\n")
+  }
+  return(resList)
+
+}

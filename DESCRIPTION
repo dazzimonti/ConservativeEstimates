@@ -1,0 +1,13 @@
+Package: ConservativeEstimates
+Type: Package
+Title: Conservative estimates for excursion sets
+Version: 0.1.1
+Date: 2016-04-12
+Author: Dario Azzimonti
+Maintainer: Dario Azzimonti <dario.azzimonti@gmail.com>
+Description: Computationally efficient method to estimate excursion sets under Gaussian random field priors.
+License: GPL-3
+LazyData: TRUE
+Depends: mvtnorm
+Imports: microbenchmark, Rcpp (>= 0.11.1)
+LinkingTo: Rcpp, RcppArmadillo
