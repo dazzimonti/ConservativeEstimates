@@ -50,50 +50,38 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   simsX<-trmvrnorm_rej_cpp(n = 1,mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1))
   time1SimX<-(get_nanotime()-timeInPart1)*1e-9
 
-  ttX<-rep(0,20)
-  ii<-seq(from=1,length.out=20,by=max(1,floor((compBdg*delta*0.4/time1SimX-20)/190)))
-  for(i in seq(20)){
+  nTests<-floor(compBdg*delta*0.4/time1SimX)
+
+  ttX<-rep(0,nTests)
+  ii<-floor(seq(from=1,to=120,by=120/nTests))
+  for(i in seq(nTests)){
     timeIn<-get_nanotime()
     temp<-trmvrnorm_rej_cpp(n = ii[i],mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1))
     ttX[i]<-(get_nanotime()-timeIn)*1e-9*1.03
     simsX<-cbind(simsX,temp)
   }
-  Cx0<-unname(lm(ttX~ii+0)$coefficients[1])
+  Cx0<-unname(lm(ttX~ii)$coefficients[1])
+  Cx<-unname(lm(ttX~ii)$coefficients[2])
 
 
-  # estimate alpha and beta with lm
+  # estimate alpha and beta with means
   timeIn<-get_nanotime()
   muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsX[,1]-problem$muEq)
+  alpha<-(get_nanotime()-timeIn)*1e-9
   simsYcX<- mvrnormArma(n=1,mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
   time1SimYcX<-(get_nanotime()-timeIn)*1e-9
 
-  tt<-rep(0,20)
-  ii<-seq(from=1,length.out=20,by=max(1,floor((compBdg*delta*0.1/time1SimYcX-20)/190)))
-  for(i in seq(20)){
-    timeIn<-get_nanotime()
-    muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsX[,1]-problem$muEq)
-    temp<- mvrnormArma(n=ii[i],mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
-    tt[i]<-(get_nanotime()-timeIn)*1e-9*1.03
-    simsYcX<-cbind(simsYcX,temp)
-  }
-  lmmYcX<-lm(tt[2:20]~ii[2:20])
-  alpha<-unname(lmmYcX$coefficients[1])
-  if(alpha<0){
-    cat("\n negative alpha \n")
-    badii=which.min(tt)
-    lmmYcX<-lm(tt[-badii]~ii[-badii])
-    alpha<-unname(lmmYcX$coefficients[1])
-  }
-  beta0<-unname(lmmYcX$coefficients[2])
+  nBetas<-ceiling(compBdg*delta*0.1/(time1SimYcX-alpha))
 
-  #  timeBeta<-microbenchmark(problem$simulatorYcX(10,simsX[,1],problem$preProcessYcX))
-  # beta0<-(quantile(timeBeta$time,probs = 0.99,names = F))*1e-9
+  timeIn<-get_nanotime()
+  simsYcX<- mvrnormArma(n=nBetas,mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
+  beta0<-(get_nanotime()-timeIn)*1e-9/nBetas
 
   # estimate time to evaluate function
   timeG<-microbenchmark(gg(1))
   tEvalG<-quantile(timeG$time,probs = 0.99,names = F)*1e-9
 
-  C_adj<-compBdg*delta -time1SimX - sum(ttX) - sum(tt)-time1SimYcX - sum(timeG$time)*1e-9
+  C_adj<-compBdg*delta -time1SimX - sum(ttX) -alpha-beta0*nBetas -time1SimYcX - sum(timeG$time)*1e-9
 
   if(verb>1){
     cat("Time passed:",compBdg*delta-C_adj,"\n",
@@ -106,12 +94,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
 
   n0<-ncol(simsX)
 
-  m0<-max(30,floor((C_adj/n0-Cx0-alpha)/(beta0+tEvalG)))
-
-  #  m0<-floor((sqrt(Cx0^2+ 4*(beta0+tEvalG)*C_adj)-Cx0)/(2*(beta0+tEvalG)))#^2
-
-
-  # n0<- ceiling(m0) #nRed #round((nRed)^(0.5+0.55*delta1))
+  m0<-max(30,floor(((C_adj-Cx0)/n0-Cx-alpha)/(beta0+tEvalG)))
 
   if(verb>1){
     cat("m0:",m0,"\n",
@@ -155,16 +138,23 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   }
 
   # Step 2: compute mStar
-  mStar<-sqrt(((Cx0+3*alpha)*mean(varCondX0))/((beta0+tEvalG)*var(expYcondX0)))
+  ratioAAmB<-mean(apply(X = matrix(1:m0),MARGIN = 1,FUN = function(nn){1/cor(gEval0[seq(nn,by=m0,length.out = n0)],expYcondX0)^2-1}))
+  mStar<-sqrt(((Cx0+Cx+3*alpha)*ratioAAmB)/(beta0+tEvalG))
   if(verb>0){
     cat("Obtained mStar:",mStar,", ")
   }
   timePart1<-(get_nanotime()-timeInPart1)*1e-9
 
   # round it to the nearest integer
-  mStar<-max(ceiling(mStar),2,na.rm = T)
+  epsMstar<-mStar-floor(mStar)
+  if(epsMstar<0.5*(2*mStar+1 - sqrt(4*mStar^2+1))){
+    mStar<-max(floor(mStar),2,na.rm = T)
+  }else{
+    mStar<-max(ceiling(mStar),2,na.rm = T)
+  }
+
   # derive nStar
-  nStar<-round((compBdg-timePart1*0.9)/(Cx0+alpha+(beta0)*mStar))
+  nStar<-round((compBdg-timePart1*0.9-Cx0)/(Cx+alpha+(beta0)*mStar))
 
   if(verb>1){
     cat("Cx0: ",Cx0,", beta0: ",beta0, ", mean(varYcX0): ", mean(varCondX0), "var(expYx0): ",var(expYcondX0),", mStar: ",mStar,"nStar: ",nStar, "Time Part 1: ",timePart1,"(compBdg assigned: ",compBdg*delta,")\n")
@@ -255,7 +245,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   }else{
     varG<-var(expYcondXfull)+mean(varCondXfull)
     varHatHatG<-varG/nStar-(mStar-1)/(nStar*mStar)*mean(varCondXfull)
-    params<-list(n=nStar,m=mStar,Cx=Cx0,alpha=alpha,beta=beta0,evalG=tEvalG)
+    params<-list(n=nStar,m=mStar,Cx=Cx,Cx0=Cx0,alpha=alpha,beta=beta0,evalG=tEvalG)
     results<-list(estim=estim,varEst=varHatHatG,expYcondX=expYcondXfull,varYcondX=varCondXfull,params=params)
     if(typeReturn==1){
       return(results)
@@ -264,7 +254,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
       varG0<-var(expYcondX0)+mean(varCondX0)
       varEst0<-varG0/n0-(m0-1)/(n0*m0)*mean(varCondX0)
       results$params0<-list(n0=n0,m0=m0)
-      results$values0<-list(estim0=hatHatG0,varEst0=varEst0,expYcondX0=expYcondX0,varYcondX0=varCondX0)
+      results$values0<-list(estim0=hatHatG0,varEst0=varEst0,expYcondX0=expYcondX0,varYcondX0=varCondX0,ratio0=ratioAAmB)
       results$times<-list(part1=timePart1,total=timeTot)
       return(results)
     }

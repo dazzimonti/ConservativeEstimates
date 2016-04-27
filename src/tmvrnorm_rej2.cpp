@@ -18,7 +18,7 @@ arma::mat mvrnormArma(int n, arma::vec mu,arma::mat sigma,int chol) {
   int ncols = mu.n_elem;
   arma::mat Y = arma::randn(ncols, n);
   if(chol){
-    return arma::repmat(mu, 1, n) + sigma*Y;
+    return arma::repmat(mu, 1, n) + sigma.t()*Y;
   }else{
     return arma::repmat(mu, 1, n) + arma::chol(sigma,"lower")*Y;
   }
