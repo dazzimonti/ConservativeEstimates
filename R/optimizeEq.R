@@ -50,13 +50,19 @@ selectEq = function(q,E,Thresh,mu,Sigma,pn=NULL,method=1){
     for(i in (2:q)){
     #  plot(pn,type='l')
     #  plot(dd,type='l')
-      dd<-dd*distances[indQ[i-1],]
+      dd<-dd^0.8*distances[indQ[i-1],]
       dd<-dd/diff(range(dd))
     #  plot(dd,type='l',col=2)
-
+  #      image(matrix(dd*pn,nrow=30),col=grey.colors(20))
+  #      contour(matrix(dd*pn,nrow=30),add=T,nlevels=12)
+   #     points(E[indQ[1:(i-1)],],pch=16)
+      
     #  plot(dd*pn,type='l')  #image(as.image(dd*pn,q = nd),col=col)
       indQ[i]<-sample.int(n,1,prob = dd*pn)
+
+#      points(t(E[indQ[i],]),pch=16,col=2)
     #  points(indQ[1:i],rep(0,i),col=2,pch=16)
+ #     i=i+1
     }
 
   }else if(method==4){
@@ -71,7 +77,7 @@ selectEq = function(q,E,Thresh,mu,Sigma,pn=NULL,method=1){
     for(i in (2:q)){
       #  plot(pn*(1-pn),type='l')
       #  plot(dd,type='l')
-      dd<-dd*distances[indQ[i-1],]
+      dd<-dd^0.8*distances[indQ[i-1],]
       dd<-dd/diff(range(dd))
       #  plot(dd,type='l',col=2)
 

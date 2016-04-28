@@ -154,7 +154,7 @@ MC_Gauss<-function(compBdg,problem,delta=0.1,type="M",typeReturn=0,verb=0,params
   }
   nStar<-j
   #  betaFull<-max(mean(unname(betaFull)),0.001)
-  # gEval<-gEval[1:nStar]
+  gEval<-gEval[1:nStar]
   estim<-mean(gEval)
   timeTot<-(get_nanotime()-timeInPart1)*1e-9
 
