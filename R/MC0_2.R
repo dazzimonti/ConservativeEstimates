@@ -17,6 +17,9 @@
 #' @param verb the level of verbosity, also sets the verbosity of trmvrnorm_rej_cpp (to verb-1).
 #' @param params system dependent parameters (if NULL they are estimated).
 #' @return A list containing the estimated probability of excursion, see typeReturn for details.
+#' @references Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
+#'
+#' Genz, A. (1992). Numerical computation of multivariate normal probabilities. Journal of Computational and Graphical Statistics, 1(2):141--149.
 #' @export
 MC_Gauss<-function(compBdg,problem,delta=0.1,type="M",typeReturn=0,verb=0,params=NULL){
   sizeX<-length(problem$muEq)

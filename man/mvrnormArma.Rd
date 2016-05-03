@@ -16,7 +16,7 @@ mvrnormArma(n, mu, sigma, chol)
 \item{chol}{integer, if 0 sigma is a covariance matrix, otherwise it is the Cholesky decomposition of the matrix.}
 }
 \value{
-A matrix containing of size dxn containing the samples.
+A matrix of size \eqn{d x n} containing the samples.
 }
 \description{
 Simulates realizations from a multivariate normal with mean mu and covariance matrix sigma.

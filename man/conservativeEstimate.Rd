@@ -27,9 +27,14 @@ conservativeEstimate(alpha = 0.95, pred, design, Thresh, pn = NULL,
 \item{algo}{choice of algorithm for computing probabilities ("GANMC", "GMC").}
 }
 \value{
-A list containing the conservative estimate ($set), the Vorob'ev level ($lvs). If lightReturn=FALSE, the actual probability of the set (proba) and the variance of this estimate (vars).
+A list containing the conservative estimate (\code{set}), the Vorob'ev level (\code{lvs}). If \code{lightReturn=FALSE}, it also returns the actual probability of the set (\code{proba}) and the variance of this estimate (\code{vars}).
 }
 \description{
 Computes conservative estimates with two step GANMC procedure for a Gaussian vector. The probability is approximated with a biased low dimensional estimator and the bias is corrected with a MC estimator.
+}
+\references{
+Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
+
+Bolin, D. and Lindgren, F. (2015). Excursion and contour uncertainty regions for latent Gaussian models. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 77(1):85--106.
 }
 

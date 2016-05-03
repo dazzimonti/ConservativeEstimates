@@ -20,9 +20,14 @@ trmvrnorm_rej_cpp(n, mu, sigma, lower, upper, verb)
 \item{verb}{level of verbosity: if lower than 3 nothing, 3 minimal, 4 extended.}
 }
 \value{
-A matrix containing of size dxn containing the samples.
+A matrix of size \eqn{d x n} containing the samples.
 }
 \description{
 Simulates realizations from a truncated multivariate normal with mean mu, covariance matrix sigma in the bounds lower upper.
+}
+\references{
+Horrace, W. C. (2005). Some results on the multivariate truncated normal distribution. Journal of Multivariate Analysis, 94(1):209--221.
+
+Robert, C. P. (1995). Simulation of truncated normal variables. Statistics and Computing, 5(2):121--125.
 }
 

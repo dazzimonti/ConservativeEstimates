@@ -11,7 +11,7 @@ using namespace Rcpp;
 //' @param mu mean vector.
 //' @param sigma covariance matrix or Cholesky decomposition of the matrix (see chol).
 //' @param chol integer, if 0 sigma is a covariance matrix, otherwise it is the Cholesky decomposition of the matrix.
-//' @return A matrix containing of size dxn containing the samples.
+//' @return A matrix of size \eqn{d x n} containing the samples.
 //' @export
 // [[Rcpp::export]]
 arma::mat mvrnormArma(int n, arma::vec mu,arma::mat sigma,int chol) {
@@ -33,7 +33,10 @@ arma::mat mvrnormArma(int n, arma::vec mu,arma::mat sigma,int chol) {
 //' @param lower vector of lower bounds.
 //' @param upper vector of upper bounds.
 //' @param verb level of verbosity: if lower than 3 nothing, 3 minimal, 4 extended.
-//' @return A matrix containing of size dxn containing the samples.
+//' @return A matrix of size \eqn{d x n} containing the samples.
+//' @references Horrace, W. C. (2005). Some results on the multivariate truncated normal distribution. Journal of Multivariate Analysis, 94(1):209--221.
+//'
+//' Robert, C. P. (1995). Simulation of truncated normal variables. Statistics and Computing, 5(2):121--125.
 //' @export
 // [[Rcpp::export]]
 arma::mat trmvrnorm_rej_cpp(int n, arma::vec mu,arma::mat sigma, arma::vec lower, arma::vec upper,int verb) {

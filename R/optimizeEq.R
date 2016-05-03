@@ -23,6 +23,11 @@
 #' \item 5  samples with equal probabilities.
 #' }
 #' @return A vector of integers denoting the chosen active dimensions of the vector mu.
+#' @references Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
+#'
+#' Chevalier, C. (2013). Fast uncertainty reduction strategies relying on Gaussian process models. PhD thesis, University of Bern.
+#'
+#' Genz, A. (1992). Numerical computation of multivariate normal probabilities. Journal of Computational and Graphical Statistics, 1(2):141--149.
 #' @export
 selectEq = function(q,E,Thresh,mu,Sigma,pn=NULL,method=1){
   n<-length(mu)
@@ -56,7 +61,7 @@ selectEq = function(q,E,Thresh,mu,Sigma,pn=NULL,method=1){
   #      image(matrix(dd*pn,nrow=30),col=grey.colors(20))
   #      contour(matrix(dd*pn,nrow=30),add=T,nlevels=12)
    #     points(E[indQ[1:(i-1)],],pch=16)
-      
+
     #  plot(dd*pn,type='l')  #image(as.image(dd*pn,q = nd),col=col)
       indQ[i]<-sample.int(n,1,prob = dd*pn)
 

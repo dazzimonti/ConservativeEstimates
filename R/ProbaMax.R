@@ -31,6 +31,13 @@
 #'    \item{\code{resRq}: }{The list returned by the MC method used for \eqn{R_q}}
 #' }
 # the probability estimate ($probabilities) and its variance ($variance), if lightReturn=FALSE it also includes the active dimensions ($indQ), the list returned by the MC estimator for Rq ($resRq).
+#' @references Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
+#'
+#' Chevalier, C. (2013). Fast uncertainty reduction strategies relying on Gaussian process models. PhD thesis, University of Bern.
+#'
+#' Dickmann, F. and Schweizer, N. (2014). Faster comparison of stopping times by nested conditional Monte Carlo. arXiv preprint arXiv:1402.0243.
+#'
+#' Genz, A. (1992). Numerical computation of multivariate normal probabilities. Journal of Computational and Graphical Statistics, 1(2):141--149.
 #' @export
 ProbaMax = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=2,verb=0,Algo="ANMC"){
 

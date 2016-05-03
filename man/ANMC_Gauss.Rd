@@ -37,4 +37,11 @@ A list containing the estimated probability of excursion, see typeReturn for det
 \description{
 Asymmetric nested Monte Carlo estimation of \eqn{P(max X^{-q} > Thresh | max X^{q} \le Thresh)} where X is a normal vector.
 }
+\references{
+Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
+
+Dickmann, F. and Schweizer, N. (2014). Faster comparison of stopping times by nested conditional Monte Carlo. arXiv preprint arXiv:1402.0243.
+
+Genz, A. (1992). Numerical computation of multivariate normal probabilities. Journal of Computational and Graphical Statistics, 1(2):141--149.
+}
 

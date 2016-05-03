@@ -35,4 +35,9 @@ A list containing the estimated probability of excursion, see typeReturn for det
 \description{
 Standard Monte Carlo estimate for \eqn{P(max X^{-q} >Thresh | max X^{q}\le Thresh)} or \eqn{P(min X^{-q} <Thresh | min X^{q}\ge Thresh)} where X is a normal vector. Needed for the bias correction in ProbaMax and ProbaMin.
 }
+\references{
+Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
+
+Genz, A. (1992). Numerical computation of multivariate normal probabilities. Journal of Computational and Graphical Statistics, 1(2):141--149.
+}
 

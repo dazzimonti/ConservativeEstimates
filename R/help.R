@@ -11,7 +11,9 @@
 #' @import microbenchmark mvtnorm
 #' @importFrom Rcpp evalCpp
 #' @useDynLib ConservativeEstimates
-#' @references Bolin, D. and Lindgren, F. (2015). Excursion and contour uncertainty regions for latent Gaussian models. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 77(1):85--106.
+#' @references Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
+#'
+#' Bolin, D. and Lindgren, F. (2015). Excursion and contour uncertainty regions for latent Gaussian models. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 77(1):85--106.
 #'
 #' Chevalier, C. (2013). Fast uncertainty reduction strategies relying on Gaussian process models. PhD thesis, University of Bern.
 #'
@@ -21,4 +23,7 @@
 #'
 #' Genz, A. and Bretz, F. (2009). Computation of Multivariate Normal and t Probabilities. Lecture Notes in Statistics 195. Springer-Verlag.
 #'
+#' Horrace, W. C. (2005). Some results on the multivariate truncated normal distribution. Journal of Multivariate Analysis, 94(1):209--221.
+#'
+#' Robert, C. P. (1995). Simulation of truncated normal variables. Statistics and Computing, 5(2):121--125.
 NULL
