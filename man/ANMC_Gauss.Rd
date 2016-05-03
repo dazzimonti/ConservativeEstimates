@@ -16,7 +16,7 @@ ANMC_Gauss(compBdg, problem, delta = 0.4, type = "M", typeReturn = 0,
 \item Thresh = threshold;
 \item muEmq = mean vector of \eqn{X^{-q}};
 \item wwCondQ = ``weights'' for \eqn{X^{-q} | X^q} [the vector \eqn{\Sigma^{-q,q}(\Sigma^q)^{-1}}];
-\item sigmaCondQChol = Cholesky factorization of the conditional covariance matrix \eqn{X^{-q} | X^q};
+\item sigmaCondQChol = Cholesky factorization of the conditional covariance matrix \eqn{\Sigma^{-q | q}};
 }}
 
 \item{delta}{total proportion of budget assigned to initial estimate (default 0.4), the actual proportion used might be smaller.}

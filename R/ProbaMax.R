@@ -2,9 +2,10 @@
 #' @title Probability of exceedance of maximum of Gaussian vector
 #'
 #'
-#' @description Computes \eqn{P(maxZ > Thresh)}
-#' Version 1 with choice of algorithm between ANMC_Gauss and MC_Gauss.
+#' @description Computes \eqn{P(max X > Thresh)}
+#' with choice of algorithm between ANMC_Gauss and MC_Gauss.
 #' The two most expensive parts are computed with the RCpp functions.
+# [Version 1]
 # INPUT
 #' @param cBdg computational budget.
 #' @param q number of active dimensions.
@@ -17,7 +18,19 @@
 #' @param method method chosen to select the active dimensions.
 #' @param verb level of verbosity (0-5), selects verbosity also for ANMC_Gauss (verb-1) and MC_Gauss (verb-1).
 #' @param Algo choice of algorithm to compute the remainder Rq ("ANMC" or "MC").
-#' @return A list containing the probability estimate ($probabilities) and its variance ($variance), if lightReturn=FALSE it also includes the active dimensions ($indQ), the list returned by the MC estimator for Rq ($resRq).
+#' @return A list containing
+#' \itemize{
+#'    \item{\code{probability}: }{The probability estimate}
+#'    \item{\code{variance}: }{the variance of the probability estimate}
+#' }
+#' If \code{lightReturn=F} then the list also contains:
+#' \itemize{
+#'    \item{\code{aux_probabilities}: }{ a list with the probability estimates: \code{probability} the actual probability, \code{pq} the biased estimator \eqn{p_q}, \code{Rq} the conditional probability \eqn{R_q}}
+#'    \item{\code{Eq}: }{the points of the design \eqn{E} selected for \eqn{p_q}}
+#'    \item{\code{indQ}: }{the indices of the active dimensions chosen for \eqn{p_q}}
+#'    \item{\code{resRq}: }{The list returned by the MC method used for \eqn{R_q}}
+#' }
+# the probability estimate ($probabilities) and its variance ($variance), if lightReturn=FALSE it also includes the active dimensions ($indQ), the list returned by the MC estimator for Rq ($resRq).
 #' @export
 ProbaMax = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=2,verb=0,Algo="ANMC"){
 
@@ -115,9 +128,9 @@ ProbaMax = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=2,verb
   vars<- (1-resMCQMC$estim)^2*varpPrime+resMCQMC$varEst*(1-pPrime)^2 +resMCQMC$varEst*varpPrime
 
   if(lightReturn){
-    res<-list(probabilities=list(probability=as.vector(proba),pPrime=pPrime,conditional=resMCQMC$estim),variance=vars)
+    res<-list(probability=as.vector(proba), variance=vars)
   }else{
-    res<-list(probabilities=list(probability=as.vector(proba),pPrime=pPrime,conditional=resMCQMC$estim),variance=vars,Eq=Eq,indQ=indQ,resRq=resMCQMC) # Uncond=UncondSims,
+    res<-list(probability=as.vector(proba), variance=vars, aux_probabilities=list(probability=as.vector(proba),pq=pPrime,Rq=resMCQMC$estim),Eq=Eq,indQ=indQ,resRq=resMCQMC)
   }
 
   return(res)

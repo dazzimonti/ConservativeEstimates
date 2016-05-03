@@ -91,14 +91,14 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
         cat("#####################\n")
       }
       probaL<-ProbaMin(cBdg=timeGANMC,q = qq,E = E[1:leftIndx,],Thresh = Thresh,mu = mu[1:leftIndx],Sigma = Sigma[1:leftIndx,1:leftIndx],pn = NULL,lightReturn=T,method=meth,verb=(verb-1),Algo=algo)
-      resL<-1-probaL$probabilities$probability
+      resL<-1-probaL$probability
       if(verb>1){
         cat("#####################\n")
         cat("   Done.\n  Compute probaR... \n")
         cat("#####################\n")
       }
       probaR<-ProbaMin(cBdg=timeGANMC,q = qq,E = E[1:rightIndx,],Thresh = Thresh,mu = mu[1:rightIndx],Sigma = Sigma[1:rightIndx,1:rightIndx],pn = NULL,lightReturn=T,method=meth,verb=(verb-1),Algo=algo)
-      resR<-1-probaR$probabilities$probability
+      resR<-1-probaR$probability
       if(verb>1){
         cat("#####################\n")
         cat("   Done.\n")
@@ -111,7 +111,7 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
       }
       pn1L<- sortPn$x[1:leftIndx]#pnorm((Thresh-mu[1:leftIndx])/sqrt(diag(Sigma[1:leftIndx,1:leftIndx])))
       probaL<-ProbaMax(cBdg=timeGANMC,q = qq,E = E[1:leftIndx,],Thresh = Thresh,mu = mu[1:leftIndx],Sigma = Sigma[1:leftIndx,1:leftIndx],pn = pn1L,lightReturn=T,method=meth,verb=(verb-1),Algo=algo)
-      resL<-1-probaL$probabilities$probability
+      resL<-1-probaL$probability
       if(verb>1){
         cat("#####################\n")
         cat("Done.\n  Compute probaR... \n")
@@ -119,7 +119,7 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
       }
       pn1R<-sortPn$x[1:rightIndx] #pnorm((Thresh-mu[1:rightIndx])/sqrt(diag(Sigma[1:rightIndx,1:rightIndx])))
       probaR<-ProbaMax(cBdg=timeGANMC,q = qq,E = E[1:rightIndx,],Thresh = Thresh,mu = mu[1:rightIndx],Sigma = Sigma[1:rightIndx,1:rightIndx],pn = pn1R,lightReturn=T,method=meth,verb=(verb-1),Algo=algo)
-      resR<-1-probaR$probabilities$probability
+      resR<-1-probaR$probability
       if(verb>1){
         cat("#####################\n")
         cat("Done.\n")
@@ -187,13 +187,11 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
 
       if(type==">"){
         probaEval<-ProbaMin(cBdg=timeGANMC,q=qq,E=E[1:NextEval],Thresh=Thresh,mu=mu[1:NextEval],Sigma = Sigma[1:NextEval,1:NextEval],pn=NULL,lightReturn=!((!lightReturn)*ffSave),method=meth,verb=(verb-1),Algo=algo)
-        #   resEval<-1-probaEval$probabilities$probability
       }else{
-        pn1E<-sortPn$x[1:NextEval]#pnorm((Thresh-mu[1:NextEval])/sqrt(diag(Sigma[1:NextEval,1:NextEval])))
+        pn1E<-sortPn$x[1:NextEval]
         probaEval<-ProbaMax(cBdg=timeGANMC,q = qq,E = E[1:NextEval,],Thresh = Thresh,mu = mu[1:NextEval],Sigma = Sigma[1:NextEval,1:NextEval],pn = pn1E,lightReturn=!((!lightReturn)*ffSave),method=meth,verb=(verb-1),Algo=algo)
-        #    resEval<-1-probaEval$probabilities$probability
       }
-      ProbaEval<-as.numeric(1-probaEval$probabilities$probability)
+      ProbaEval<-as.numeric(1-probaEval$probability)
       varEval<- probaEval$variance
     }
 
@@ -202,7 +200,6 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
       leftIndx<-NextEval
       ProbaLeft<-ProbaEval
       varLeft<-varEval
-      #    finPpL<-probaEval
       rightIndx<-rightIndx
       ProbaRight<-ProbaRight
     }
@@ -212,7 +209,6 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
       rightIndx<-NextEval
       ProbaRight<-ProbaEval
       varRight<-varEval
-      #    finPpR<-probaEval
     }
 
     j=j+1

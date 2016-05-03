@@ -3,7 +3,7 @@
 #' @details Package: ConservativeEstimates \cr
 #' Type: Package \cr
 #' Version: 0.1.1 \cr
-#' Date: 2016-04-12
+#' Date: 2016-05-03
 #'
 #' @author Dario Azzimonti (dario.azzimonti@@gmail.com) . Thanks to David Ginsbourger for the fruitful discussions and his help in testing and improving the package.
 #' @docType package

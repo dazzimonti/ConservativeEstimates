@@ -31,11 +31,22 @@ ProbaMax(cBdg, q, E, Thresh, mu, Sigma, pn = NULL, lightReturn = T,
 \item{Algo}{choice of algorithm to compute the remainder Rq ("ANMC" or "MC").}
 }
 \value{
-A list containing the probability estimate ($probabilities) and its variance ($variance), if lightReturn=FALSE it also includes the active dimensions ($indQ), the list returned by the MC estimator for Rq ($resRq).
+A list containing
+\itemize{
+   \item{\code{probability}: }{The probability estimate}
+   \item{\code{variance}: }{the variance of the probability estimate}
+}
+If \code{lightReturn=F} then the list also contains:
+\itemize{
+   \item{\code{aux_probabilities}: }{ a list with the probability estimates: \code{probability} the actual probability, \code{pq} the biased estimator \eqn{p_q}, \code{Rq} the conditional probability \eqn{R_q}}
+   \item{\code{Eq}: }{the points of the design \eqn{E} selected for \eqn{p_q}}
+   \item{\code{indQ}: }{the indices of the active dimensions chosen for \eqn{p_q}}
+   \item{\code{resRq}: }{The list returned by the MC method used for \eqn{R_q}}
+}
 }
 \description{
-Computes \eqn{P(maxZ > Thresh)}
-Version 1 with choice of algorithm between ANMC_Gauss and MC_Gauss.
+Computes \eqn{P(max X > Thresh)}
+with choice of algorithm between ANMC_Gauss and MC_Gauss.
 The two most expensive parts are computed with the RCpp functions.
 }
 
