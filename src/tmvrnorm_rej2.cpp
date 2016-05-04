@@ -80,7 +80,7 @@ while(samplesRemaining>0)
     }
 //      if (alpha <= 0.01) warning(sprintf("Acceptance rate is very low (%s) and rejection sampling becomes inefficient. Consider using Gibbs sampling.", alpha))
     int addedNow = std::min(j, samplesRemaining);
-    Y.submat(0,totalAccepted,(ncols-1),(totalAccepted+addedNow-1)) = X.cols(goodIndices.head(addedNow));
+    Y.submat(0,totalAccepted,(ncols-1),(totalAccepted+addedNow-1)) = X.cols(goodIndices.subvec(0,(addedNow-1)));
     totalAccepted += addedNow;
     samplesRemaining -= addedNow;
     }
