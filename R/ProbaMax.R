@@ -39,7 +39,7 @@
 #'
 #' Genz, A. (1992). Numerical computation of multivariate normal probabilities. Journal of Computational and Graphical Statistics, 1(2):141--149.
 #' @export
-ProbaMax = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=2,verb=0,Algo="ANMC"){
+ProbaMax = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=3,verb=0,Algo="ANMC"){
 
   # initialize parameters
   n<-length(mu)

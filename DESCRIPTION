@@ -5,9 +5,17 @@ Version: 0.1.1
 Date: 2016-05-03
 Author: Dario Azzimonti
 Maintainer: Dario Azzimonti <dario.azzimonti@gmail.com>
-Description: Computationally efficient method to estimate excursion sets under Gaussian random field priors. Implements an estimator for orthant probabilities of high-dimensional Gaussian vectors.
+Description: Computationally efficient method to estimate excursion sets under
+    Gaussian random field priors. Implements an estimator for orthant probabilities
+    of high-dimensional Gaussian vectors.
 License: GPL-3
 LazyData: TRUE
-Depends: mvtnorm
-Imports: microbenchmark, Rcpp (>= 0.11.1)
+Depends:
+    mvtnorm
+Imports:
+    microbenchmark,
+    Rcpp (>= 0.11.1)
+Suggests:
+    DiceKriging
 LinkingTo: Rcpp, RcppArmadillo
+RoxygenNote: 5.0.1

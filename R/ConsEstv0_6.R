@@ -12,6 +12,42 @@
 #' @param lightReturn boolean for light return.
 #' @param algo choice of algorithm for computing probabilities ("GANMC", "GMC").
 #' @return A list containing the conservative estimate (\code{set}), the Vorob'ev level (\code{lvs}). If \code{lightReturn=FALSE}, it also returns the actual probability of the set (\code{proba}) and the variance of this estimate (\code{vars}).
+#' @examples
+#' if (!requireNamespace("DiceKriging", quietly = TRUE)) {
+#' stop("DiceKriging needed for this example to work. Please install it.",
+#'      call. = FALSE)
+#' }
+#' # Compute conservative estimate of excursion set of testfun below Thresh
+#' # Initialize
+#' testfun<-function(x){return(((3*x^2+7*x-3)*exp(-1*(x)^2)*cos(5*pi*x^2)-1.2*x^2))}
+#' mDet<- 1500
+#'
+#' # Uniform design points
+#' set.seed(42)
+#' doe<-runif(n = 8)
+#' res<-testfun(doe)
+#' Thresh<-0
+#' # create km
+#' smallKm <- DiceKriging::km(design = matrix(doe,ncol=1),
+#' response = res,covtype = "matern5_2",coef.trend = -1,coef.cov = c(0.05),coef.var = 1.1)
+#' # prediction at newdata
+#' newdata<-data.frame(matrix(seq(0,1,,mDet),ncol=1)); colnames(newdata)<-colnames(smallKm@X)
+#' pred<-DiceKriging::predict.km(object = smallKm,newdata = newdata,type = "UK",cov.compute = T)
+#'
+#' \dontrun{
+#' # Plot (optional)
+#' plot(seq(0,1,,mDet),pred$mean,type='l')
+#' points(doe,res,pch=10)
+#' abline(h = Thresh)
+#' lines(seq(0,1,,mDet),pred$mean+pred$sd,lty=2,col=1)
+#' lines(seq(0,1,,mDet),pred$mean-pred$sd,lty=2,col=1)
+#' }
+#' # Compute the coverage function
+#' pn<-pnorm((Thresh-pred$mean)/pred$sd)
+#'
+#' \dontrun{CE<-conservativeEstimate(alpha = 0.95,pred = pred,design = as.matrix(newdata),
+#' Thresh = Thresh,type = "<",verb=1, pn=pn,algo = "ANMC")
+#' points(newdata[CE$set,],rep(-0.1,mDet)[CE$set],col=4,pch="-",cex=2)}
 #' @references Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
 #'
 #' Bolin, D. and Lindgren, F. (2015). Excursion and contour uncertainty regions for latent Gaussian models. Journal of the Royal Statistical Society: Series B (Statistical Methodology), 77(1):85--106.
@@ -60,7 +96,7 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
   leftIndx<-indxAlphaProd
   rightIndx<-indMaxSort
 
-  meth=2
+  meth=3
   sizeMaxGenz<-500
 
   if(verb)

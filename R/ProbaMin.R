@@ -39,7 +39,7 @@
 #'
 #' Genz, A. (1992). Numerical computation of multivariate normal probabilities. Journal of Computational and Graphical Statistics, 1(2):141--149.
 #' @export
-ProbaMin = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=2,verb=0,Algo="ANMC"){
+ProbaMin = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=3,verb=0,Algo="ANMC"){
 
   # initialize parameters
   n<-length(mu)
@@ -51,7 +51,7 @@ ProbaMin = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=2,verb
     E<-as.matrix(E)
 
   # Select the appropriate q points
-  indQ<-selectEq(q=q,E=E,Thresh=Thresh,mu=mu,Sigma=Sigma,pn=pn,method=method)
+  indQ<-selectEq(q=q,E=E,Thresh=Thresh,mu=mu,Sigma=Sigma,pn=(1-pn),method=method)
 
   if(verb>=1){
     cat("Computed indQ points, q = ",q,"\n")

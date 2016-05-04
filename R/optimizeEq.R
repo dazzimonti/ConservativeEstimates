@@ -8,6 +8,8 @@
 # 5 => samples with equal probabilities
 #' @title Select active dimensions for small dimensional estimate
 #'
+#' @description The function \code{selectEq} selects the active dimensions for the computation of \eqn{p_q} with an heuristic method.
+#'
 #' @param q number of active dimensions.
 #' @param E discretization design for the field.
 #' @param Thresh threshold.
