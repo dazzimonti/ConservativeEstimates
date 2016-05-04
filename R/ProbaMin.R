@@ -2,7 +2,7 @@
 #' @title Probability of exceedance of minimum of Gaussian vector
 #'
 #'
-#' @description Computes \eqn{P(min X \ge Thresh)}
+#' @description Computes \eqn{P(min X \le Thresh)}
 #' with choice of algorithm between ANMC_Gauss and MC_Gauss.
 #' The two most expensive parts are computed with the RCpp functions.
 # [Version 1]
