@@ -45,7 +45,7 @@ If \code{lightReturn=F} then the list also contains:
  }
 }
 \description{
-Computes \eqn{P(min X \ge Thresh)}
+Computes \eqn{P(min X \le Thresh)}
 with choice of algorithm between ANMC_Gauss and MC_Gauss.
 The two most expensive parts are computed with the RCpp functions.
 }
