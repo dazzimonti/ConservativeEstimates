@@ -10,6 +10,7 @@
 #' @name ConservativeEstimates
 #' @import microbenchmark mvtnorm
 #' @importFrom Rcpp evalCpp
+#' @importFrom stats cor dist lm pnorm quantile var
 #' @useDynLib ConservativeEstimates
 #' @references Azzimonti, D. and Ginsbourger, D. (2016). Estimating orthant probabilities of high dimensional Gaussian vectors with an application to set estimation. Preprint at \href{https://hal.archives-ouvertes.fr/hal-01289126}{hal-01289126}
 #'

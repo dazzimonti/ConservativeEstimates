@@ -52,7 +52,7 @@ smallKm <- DiceKriging::km(design = matrix(doe,ncol=1),
 response = res,covtype = "matern5_2",coef.trend = -1,coef.cov = c(0.05),coef.var = 1.1)
 # prediction at newdata
 newdata<-data.frame(matrix(seq(0,1,,mDet),ncol=1)); colnames(newdata)<-colnames(smallKm@X)
-pred<-DiceKriging::predict.km(object = smallKm,newdata = newdata,type = "UK",cov.compute = T)
+pred<-DiceKriging::predict.km(object = smallKm,newdata = newdata,type = "UK",cov.compute = TRUE)
 
 \dontrun{
 # Plot (optional)
