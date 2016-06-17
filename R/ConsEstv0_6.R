@@ -96,7 +96,7 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
   leftIndx<-indxAlphaProd
   rightIndx<-indMaxSort
 
-  meth=3
+  meth=4
   sizeMaxGenz<-500
 
   if(verb)

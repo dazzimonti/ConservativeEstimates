@@ -143,8 +143,17 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   }
 
   # Step 2: compute mStar
-  ratioAAmB<-mean(apply(X = matrix(1:m0),MARGIN = 1,FUN = function(nn){1/cor(gEval0[seq(nn,by=m0,length.out = n0)],expYcondX0)^2-1}))
+  ratioAAmB<-mean(apply(X = matrix(1:m0),MARGIN = 1,FUN = function(nn){var(gEval0[seq(nn,by=m0,length.out = n0)])*var(expYcondX0)/(cov(gEval0[seq(nn,by=m0,length.out = n0)],expYcondX0))^2-1}),na.rm = TRUE)
+  if(!is.finite(ratioAAmB)){
+    ratioAAmB<-0.25 # upper bound
+  }
   mStar<-sqrt(((Cx0+Cx+3*alpha)*ratioAAmB)/(beta0+tEvalG))
+  if(!is.finite(mStar)){
+    if(verb>5){
+      cat("mStar:",mStar,", replaced it with",m0,"\n")
+    }
+    mStar<-m0
+  }
   if(verb>0){
     cat("Obtained mStar:",mStar,", ")
   }

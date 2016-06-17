@@ -48,6 +48,7 @@ ProbaMax = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=3,verb
     E<-as.matrix(E)
 
   # Select the appropriate q points
+  q<-min(q,length(unique(pn))-1)
   # [pn = P(x in Gamma), interesting points here have high prob of not being in Gamma]
   indQ<-selectEq(q=q,E=E,Thresh=Thresh,mu=mu,Sigma=Sigma,pn=(1-pn),method=method)
 
