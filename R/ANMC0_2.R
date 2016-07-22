@@ -55,7 +55,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   simsX<-trmvrnorm_rej_cpp(n = 1,mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1))
   time1SimX<-(get_nanotime()-timeInPart1)*1e-9
 
-  nTests<-floor(compBdg*delta*0.4/time1SimX)
+  nTests<-min(floor(compBdg*delta*0.4/time1SimX),floor((2000+120/2)/(120/2+1)))
 
   ttX<-rep(0,nTests)
   ii<-floor(seq(from=1,to=120,by=120/nTests))
@@ -184,9 +184,9 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   # re-estimate also Cx for debug reasons
   #  timeIn<-proc.time()
   if(nStar>n0){
-    simsXfull<-cbind(simsX,trmvrnorm_rej_cpp(n = (nStar-n0),mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1)))
+    simsX<-cbind(simsX,trmvrnorm_rej_cpp(n = (nStar-n0),mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1)))
   }else{
-    simsXfull<-simsX
+    simsX<-simsX
   }
   #  Cx<-max(unname((proc.time()-timeIn)[1]),0.001)/(nStar-n0)
 
@@ -205,7 +205,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   ########
   gEval<-rep(0,nStar*mStar)
   for(j in seq(nStar)){
-    #    muYcondX<-problem$muY+wwYcondX%*%(simsXfull[,j]-problem$muX)
+    #    muYcondX<-problem$muY+wwYcondX%*%(simsX[,j]-problem$muX)
 
     if(j<=n0){  # we have already simulated X
       simsYcondXfull[,(1:indM+mStar*(j-1))]<-simsYcondX[,(1:indM+m0*(j-1))] # all i,j s.t. j<=n0 and i<=m0
@@ -215,7 +215,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
       # here indM=mStar>m0 we need to simulate Y|X
       if(indM>m0){
         #        timeIn<-proc.time()
-        muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsXfull[,j]-problem$muEq)
+        muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsX[,j]-problem$muEq)
         simsYcondXfull[,((m0+1):mStar+mStar*(j-1))]<-mvrnormArma(n=(mStar-m0),mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
         for(i in seq(mStar)){
           # now we have the simulations, we can compute all estimates
@@ -224,7 +224,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
       }
     }else{ # here we haven't simulated X before so we need all Y|X
       #      timeIn<-proc.time()
-      muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsXfull[,j]-problem$muEq)
+      muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsX[,j]-problem$muEq)
       simsYcondXfull[,(1:mStar+mStar*(j-1))]<-mvrnormArma(n=mStar,mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
       for(i in seq(mStar)){
         # now we have the simulations, we can compute all estimates
@@ -253,6 +253,8 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   if(verb>=1){
     cat("Total time: ",timeTot,"(compBdg: ",compBdg,")\n")
   }
+  # GC to free memory
+  dums<-sum(gc()[,2])
 
   if(typeReturn==0){
     return(estim)

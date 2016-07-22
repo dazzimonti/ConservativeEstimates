@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 #include <algorithm>
 #include <math.h>
+#include <limits.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
 
@@ -54,10 +55,11 @@ arma::mat trmvrnorm_rej_cpp(int n, arma::vec mu,arma::mat sigma, arma::vec lower
   }
 //    if (alpha <= 0.01) warning(sprintf("Acceptance rate is very low (%s) and rejection sampling becomes inefficient. Consider using Gibbs sampling.", alpha))
 //    estimatedAlpha <- TRUE
+int imax = std::numeric_limits<int>::max();
 int totalSamplesRun=0;
 while(samplesRemaining>0)
     {
-    int nPossibleSamples = ((samplesRemaining/alpha > 1000000) ? (samplesRemaining) : (std::max( (int) (ceil(samplesRemaining/alpha)),10)));
+    int nPossibleSamples = ((samplesRemaining/alpha > imax/ncols/2) ? (samplesRemaining) : (std::max( (int) (ceil(samplesRemaining/alpha)),10)));
     arma::mat X = mvrnormArma(nPossibleSamples,mu,cholSigma,1);
     totalSamplesRun = totalSamplesRun+nPossibleSamples;
     arma::uvec goodIndices(nPossibleSamples);
