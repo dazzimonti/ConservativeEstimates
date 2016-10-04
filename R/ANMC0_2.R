@@ -57,9 +57,9 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
 
   nTests<-min(floor(compBdg*delta*0.4/time1SimX),floor((2000+120/2)/(120/2+1)))
 
-  ttX<-rep(0,nTests)
-  ii<-floor(seq(from=1,to=120,by=120/nTests))
-  for(i in seq(nTests)){
+  ii<-floor(seq(from=1,to=120,by=ceiling(120/nTests)))
+  ttX<-rep(0,length(ii))
+  for(i in seq(length(ii))){
     timeIn<-get_nanotime()
     temp<-trmvrnorm_rej_cpp(n = ii[i],mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1))
     ttX[i]<-(get_nanotime()-timeIn)*1e-9*1.03
@@ -143,7 +143,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   }
 
   # Step 2: compute mStar
-  ratioAAmB<-mean(apply(X = matrix(1:m0),MARGIN = 1,FUN = function(nn){var(gEval0[seq(nn,by=m0,length.out = n0)])*var(expYcondX0)/(cov(gEval0[seq(nn,by=m0,length.out = n0)],expYcondX0))^2-1}),na.rm = TRUE)
+  ratioAAmB<-mean(apply(X = matrix(1:m0),MARGIN = 1,FUN = function(nn){var(gEval0[seq(nn,by=m0,length.out = n0)])/var(expYcondX0)-1}),na.rm = TRUE)
   if(!is.finite(ratioAAmB)){
     ratioAAmB<-0.25 # upper bound
   }
@@ -159,12 +159,12 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   }
   timePart1<-(get_nanotime()-timeInPart1)*1e-9
 
-  # round it to the nearest integer
+  # round it to the nearest integer (if it is less than 2 we use 1)
   epsMstar<-mStar-floor(mStar)
   if(epsMstar<0.5*(2*mStar+1 - sqrt(4*mStar^2+1))){
-    mStar<-max(floor(mStar),2,na.rm = T)
+    mStar<-max(floor(mStar),1,na.rm = T)
   }else{
-    mStar<-max(ceiling(mStar),2,na.rm = T)
+    mStar<-max(ceiling(mStar),1,na.rm = T)
   }
 
   # derive nStar
@@ -178,7 +178,7 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
   # we already have n0 sims for X and m0 sims of Y|X for each x sim
   # so we only need nStar-n0 simulations for X and mStar simulations
   # of Y conditional on the nStar-n0 xs, and mStar-m0 for the n0 Xs
-  simsYcondXfull<-matrix(0,nrow = sizeY,ncol = nStar*mStar)
+  simsYcondXfull<-matrix(0,nrow = sizeY,ncol = mStar)
 
   # generate the missing nStar -n0 simulations of X
   # re-estimate also Cx for debug reasons
@@ -208,7 +208,8 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
     #    muYcondX<-problem$muY+wwYcondX%*%(simsX[,j]-problem$muX)
 
     if(j<=n0){  # we have already simulated X
-      simsYcondXfull[,(1:indM+mStar*(j-1))]<-simsYcondX[,(1:indM+m0*(j-1))] # all i,j s.t. j<=n0 and i<=m0
+#      simsYcondXfull[,(1:indM+mStar*(j-1))]<-simsYcondX[,(1:indM+m0*(j-1))] # all i,j s.t. j<=n0 and i<=m0
+      simsYcondXfull[,(1:indM)]<-simsYcondX[,(1:indM+m0*(j-1))] # all i,j s.t. j<=n0 and i<=m0
       gEval[(1:indM+mStar*(j-1))]<-gEval0[(1:indM+m0*(j-1))]
 
 
@@ -216,19 +217,19 @@ ANMC_Gauss<-function(compBdg,problem,delta=0.4,type="M",typeReturn=0,verb=0){
       if(indM>m0){
         #        timeIn<-proc.time()
         muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsX[,j]-problem$muEq)
-        simsYcondXfull[,((m0+1):mStar+mStar*(j-1))]<-mvrnormArma(n=(mStar-m0),mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
+        simsYcondXfull[,((m0+1):mStar)]<-mvrnormArma(n=(mStar-m0),mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
         for(i in seq(mStar)){
           # now we have the simulations, we can compute all estimates
-          gEval[i+mStar*(j-1)]<-gg(simsYcondXfull[,(i+mStar*(j-1))])
+          gEval[i+mStar*(j-1)]<-gg(simsYcondXfull[,i])
         }
       }
     }else{ # here we haven't simulated X before so we need all Y|X
       #      timeIn<-proc.time()
       muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsX[,j]-problem$muEq)
-      simsYcondXfull[,(1:mStar+mStar*(j-1))]<-mvrnormArma(n=mStar,mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
+      simsYcondXfull[,(1:mStar)]<-mvrnormArma(n=mStar,mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
       for(i in seq(mStar)){
         # now we have the simulations, we can compute all estimates
-        gEval[i+mStar*(j-1)]<-gg(simsYcondXfull[,(i+mStar*(j-1))])
+        gEval[i+mStar*(j-1)]<-gg(simsYcondXfull[,i])
       }
     }
 

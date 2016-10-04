@@ -4,21 +4,21 @@
 \alias{ProbaMax}
 \title{Probability of exceedance of maximum of Gaussian vector}
 \usage{
-ProbaMax(cBdg, q, E, Thresh, mu, Sigma, pn = NULL, lightReturn = T,
-  method = 3, verb = 0, Algo = "ANMC")
+ProbaMax(cBdg, Thresh, mu, Sigma, E = NULL, q = NULL, pn = NULL,
+  lightReturn = T, method = 4, verb = 0, Algo = "ANMC")
 }
 \arguments{
 \item{cBdg}{computational budget.}
-
-\item{q}{number of active dimensions.}
-
-\item{E}{discretization design for the field (somehow optional?).}
 
 \item{Thresh}{threshold.}
 
 \item{mu}{mean vector.}
 
 \item{Sigma}{covariance matrix.}
+
+\item{E}{discretization design for the field. If \code{NULL}, a simplex-lattice design {n,n} is used, with n=length(mu). In this case the choice of method=4,5 are not advised.}
+
+\item{q}{number of active dimensions. Can be passed either as an integer or as numeric vector of length 2. The vector is the range where to search for the best number of active dimensions. If \code{NULL} q is selected as the best number of active dimensions in the feasible range.}
 
 \item{pn}{coverage function vector.}
 
@@ -35,6 +35,7 @@ A list containing
 \itemize{
    \item{\code{probability}: }{The probability estimate}
    \item{\code{variance}: }{the variance of the probability estimate}
+   \item{\code{q}:}{the number of selected active dimensions}
 }
 If \code{lightReturn=F} then the list also contains:
 \itemize{

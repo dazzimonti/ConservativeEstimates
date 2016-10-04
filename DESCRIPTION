@@ -1,8 +1,8 @@
 Package: ConservativeEstimates
 Type: Package
 Title: Conservative estimates for excursion sets
-Version: 0.1.1
-Date: 2016-05-03
+Version: 0.2.0
+Date: 2016-10-04
 Author: Dario Azzimonti
 Maintainer: Dario Azzimonti <dario.azzimonti@gmail.com>
 Description: Computationally efficient method to estimate excursion sets under

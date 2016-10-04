@@ -122,13 +122,18 @@ MC_Gauss<-function(compBdg,problem,delta=0.1,type="M",typeReturn=0,verb=0,params
   # we already have n0 sims for X and m0 sims of Y|X for each x sim
   # so we only need nStar-n0 simulations for X and mStar simulations
   # of Y conditional on the nStar-n0 xs, and mStar-m0 for the n0 Xs
-  simsYcondXfull<-matrix(0,nrow = sizeY,ncol = nStar)
+  simsYcondXfull<-matrix(0,nrow = sizeY,ncol = 1)
 
   # generate the missing nStar -n0 simulations of X
   # re-estimate also Cx for debug reasons
   #  timeIn<-proc.time()
   if(is.null(params)){
-    simsXfull<-cbind(simsX,trmvrnorm_rej_cpp(n = (nStar-n0),mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1)))
+    if(nStar>n0){
+      simsXfull<-cbind(simsX,trmvrnorm_rej_cpp(n = (nStar-n0),mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1)))
+    }else{
+      simsXfull<-simsX
+      nStar<-n0
+    }
   }else{
     simsXfull<-trmvrnorm_rej_cpp(n = nStar,mu = problem$muEq,sigma = problem$sigmaEq,upper = upperTmvn,lower = lowerTmvn,verb=(verb-1))
   }
@@ -143,10 +148,10 @@ MC_Gauss<-function(compBdg,problem,delta=0.1,type="M",typeReturn=0,verb=0,params
   for(j in seq(nStar)){
     #  muYcondX<-problem$muY+wwYcondX%*%(simsXfull[,j]-problem$muX)
     muYcondX<- problem$muEmq + problem$wwCondQ%*%(simsXfull[,j]-problem$muEq)
-    simsYcondXfull[,j]<-mvrnormArma(n=1,mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
+    simsYcondXfull[,1]<-mvrnormArma(n=1,mu = muYcondX,sigma=problem$sigmaCondQChol,chol=1)
 
     # now we have the simulations, we can compute all estimates
-    gEval[j]<-gg(simsYcondXfull[,j])
+    gEval[j]<-gg(simsYcondXfull[,1])
 
     #    hatG<-hatG+expYcondXfull[j]
     if(j%%100==0){

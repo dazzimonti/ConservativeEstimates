@@ -120,7 +120,7 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
   else{ # Otherwise we need to..
     precMC<-2.5e3
     timeGANMC<-10
-    qq<-min(15,leftIndx)
+    qq<-c(min(10,leftIndx),min(20,leftIndx))
     if(verb>1)
       cat(" indMaxSort (",indMaxSort,") greater than",sizeMaxGenz,", use MC/ANMC \n")
     if(type==">"){
@@ -179,7 +179,7 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
       }else{
         cat("leftIndx:",leftIndx,",ProbaLeft: ",ProbaLeft,", rightInx: ",rightIndx,",ProbaRight: ",ProbaRight)
         if(verb>2)
-          cat(", computational Bgd: ",timeGANMC," q: ",qq)
+          cat(", computational Bgd: ",timeGANMC," q: ",probaL$q)
         cat(". (Algorithm=",algo,")")
       }
       cat(". Memory currently used: ",sum(gc()[,2])," MB\n")
@@ -206,21 +206,21 @@ conservativeEstimate<-function(alpha=0.95,pred,design,Thresh,pn=NULL,type=">",ve
     }
     else{ # Otherwise we need to..
       precMC<-2.5e3
-      qq<-min(15,leftIndx-1)
+      qq<-c(min(15,leftIndx-1),min(25,leftIndx-1))
       if(!lightReturn)
         ffSave=T
       if((rightIndx-leftIndx)<=7){
         precMC<-5e3
         timeGANMC=25
-        qq<-min(20,leftIndx-1)
+        qq<-c(min(20,leftIndx-1),min(30,leftIndx-1))
         if((rightIndx-leftIndx)<=5){
           precMC<-1e4
-          qq<-min(20,leftIndx-1)
+          qq<-c(min(20,leftIndx-1),min(40,leftIndx-1))
         }
         if((rightIndx-leftIndx)<=3){
           precMC<-3e4
           timeGANMC=30
-          qq<-min(30,leftIndx-1)
+          qq<-c(min(25,leftIndx-1),min(60,leftIndx-1))
         }
       }
 

@@ -11,8 +11,8 @@ Conservative estimation of excursion sets under Gaussian models.
 \details{
 Package: ConservativeEstimates \cr
 Type: Package \cr
-Version: 0.1.1 \cr
-Date: 2016-05-03
+Version: 0.2.0 \cr
+Date: 2016-10-04
 }
 \author{
 Dario Azzimonti (dario.azzimonti@gmail.com) . Thanks to David Ginsbourger for the fruitful discussions and his help in testing and improving the package.

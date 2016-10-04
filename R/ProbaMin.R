@@ -8,11 +8,11 @@
 # [Version 1]
 # INPUT
 #' @param cBdg computational budget.
-#' @param q number of active dimensions.
-#' @param E discretization design for the field (somehow optional?).
 #' @param Thresh threshold.
 #' @param mu mean vector.
 #' @param Sigma covariance matrix.
+#' @param E discretization design for the field. If \code{NULL}, a simplex-lattice design {n,n} is used, with n=length(mu). In this case the choice of method=4,5 are not advised.
+#' @param q number of active dimensions. Can be passed either as an integer or as numeric vector of length 2. The vector is the range where to search for the best number of active dimensions. If \code{NULL} q is selected as the best number of active dimensions in the feasible range.
 #' @param pn coverage function vector.
 #' @param lightReturn boolean, if true light return.
 #' @param method method chosen to select the active dimensions.
@@ -22,6 +22,7 @@
 #' \itemize{
 #'    \item{\code{probability}: }{The probability estimate}
 #'    \item{\code{variance}: }{the variance of the probability estimate}
+#'    \item{\code{q}:}{the number of selected active dimensions}
 #' }
 #' If \code{lightReturn=F} then the list also contains:
 #' \itemize{
@@ -39,7 +40,7 @@
 #'
 #' Genz, A. (1992). Numerical computation of multivariate normal probabilities. Journal of Computational and Graphical Statistics, 1(2):141--149.
 #' @export
-ProbaMin = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=3,verb=0,Algo="ANMC"){
+ProbaMin = function(cBdg,Thresh,mu,Sigma,E=NULL,q=NULL,pn=NULL,lightReturn=T,method=4,verb=0,Algo="ANMC"){
 
   # initialize parameters
   n<-length(mu)
@@ -47,12 +48,19 @@ ProbaMin = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=3,verb
   if(is.null(pn))
     pn<-pnorm((mu-Thresh)/sqrt(diag(Sigma)))
 
+  if(is.null(E)){
+    E<-seq(0,1,length.out = length(mu))
+  }
+
   if(!is.matrix(E))
     E<-as.matrix(E)
 
-  # Select the appropriate q points
-  q<-min(q,length(unique(pn))-1)
+  # Select q and the active dimensions (if q is a number we select q active dims)
+#  q<-min(q,length(unique(pn))-1)
   indQ<-selectEq(q=q,E=E,Thresh=Thresh,mu=mu,Sigma=Sigma,pn=(1-pn),method=method)
+
+  # if q was given as a range here we reinitialize it as the number of active dims
+  q<-length(indQ)
 
   if(verb>=1){
     cat("Computed indQ points, q = ",q,"\n")
@@ -138,7 +146,7 @@ ProbaMin = function(cBdg,q,E,Thresh,mu,Sigma,pn=NULL,lightReturn=T,method=3,verb
   vars<- (1-resMCQMC$estim)^2*varpPrime+resMCQMC$varEst*(1-pPrime)^2 +resMCQMC$varEst*varpPrime
 
   if(lightReturn){
-    res<-list(probability=as.vector(proba), variance=vars)
+    res<-list(probability=as.vector(proba), variance=vars,q=q)
   }else{
     res<- list(probability=as.vector(proba), variance=vars, aux_probabilities=list(probability=as.vector(proba),pq=pPrime,Rq=resMCQMC$estim),Eq=Eq,indQ=indQ,resRq=resMCQMC)
   }

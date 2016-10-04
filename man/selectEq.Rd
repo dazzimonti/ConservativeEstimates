@@ -4,10 +4,11 @@
 \alias{selectEq}
 \title{Select active dimensions for small dimensional estimate}
 \usage{
-selectEq(q, E, Thresh, mu, Sigma, pn = NULL, method = 1)
+selectEq(q = NULL, E, Thresh, mu, Sigma, pn = NULL, method = 1,
+  verb = 0)
 }
 \arguments{
-\item{q}{number of active dimensions.}
+\item{q}{either the fixed number of active dimensions or the range where the number of active dimensions is chosen with \code{selectQdims}. If \code{NULL} the function \code{selectQdims} is called.}
 
 \item{E}{discretization design for the field.}
 
@@ -25,8 +26,10 @@ selectEq(q, E, Thresh, mu, Sigma, pn = NULL, method = 1)
 \item 2  samples from pn*(1-pn);
 \item 3  samples from pn adjusting for the distance (tries to explore all modes);
 \item 4  samples from pn*(1-pn) adjusting for the distance (tries to explore all modes);
-\item 5  samples with equal probabilities.
+\item 5  samples with uniform probabilities.
 }}
+
+\item{verb}{level of verbosity: 0 returns nothing, 1 returns minimal info}
 }
 \value{
 A vector of integers denoting the chosen active dimensions of the vector mu.
